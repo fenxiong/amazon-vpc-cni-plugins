@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/amazon-vpc-cni-plugins/capabilities"
 	"github.com/aws/amazon-vpc-cni-plugins/logger"
+	"github.com/aws/amazon-vpc-cni-plugins/network/cniwrapper"
 	"github.com/aws/amazon-vpc-cni-plugins/network/eniwrapper"
 	"github.com/aws/amazon-vpc-cni-plugins/network/netlinkwrapper"
 	"github.com/aws/amazon-vpc-cni-plugins/network/netns"
@@ -46,6 +47,7 @@ type Plugin struct {
 	NetLinkWrapper netlinkwrapper.NetLink
 	NetNSProvider  netns.NetNSProvider
 	OSWrapper      oswrapper.OS
+	CNIWrapper     cniwrapper.CNI
 }
 
 // NewPlugin creates a new CNI Plugin object.
@@ -65,6 +67,7 @@ func NewPlugin(
 		NetLinkWrapper: netlinkwrapper.NewNetLink(),
 		NetNSProvider:  netns.NewNetNSProvider(),
 		OSWrapper:      oswrapper.NewOS(),
+		CNIWrapper:     cniwrapper.NewCNI(),
 	}, nil
 }
 

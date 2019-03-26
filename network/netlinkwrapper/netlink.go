@@ -25,7 +25,7 @@ type NetLink interface {
 	// Equivalent to: `ip addr add $addr dev $link`
 	AddrAdd(link netlink.Link, addr *netlink.Addr) error
 	// LinkAdd adds a new link device. The type and features of the device
-	// are taken fromt the parameters in the link object.
+	// are taken from the parameters in the link object.
 	// Equivalent to: `ip link add $link`
 	LinkAdd(link netlink.Link) error
 	// LinkDel deletes link device. Either Index or Name must be set in

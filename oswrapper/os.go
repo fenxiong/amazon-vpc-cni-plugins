@@ -31,19 +31,19 @@ type User interface {
 	Lookup(username string) (*user.User, error)
 }
 
-type userImpl struct {
+type osImpl struct {
 }
 
 // NewUser creates a new User object
-func NewUser() User {
-	return &userImpl{}
+func NewOS() OS {
+	return &osImpl{}
 }
 
-func (*userImpl) Current() (*user.User, error) {
+func (*osImpl) Current() (*user.User, error) {
 	return user.Current()
 }
 
-func (*userImpl) Lookup(username string) (*user.User, error) {
+func (*osImpl) Lookup(username string) (*user.User, error) {
 	return user.Lookup(username)
 }
 
@@ -52,13 +52,6 @@ type Unix interface {
 	IoctlSetInt(fd int, req uint, value int) error
 }
 
-type unixImpl struct {
-}
-
-func NewUnix() Unix {
-	return &unixImpl{}
-}
-
-func (*unixImpl) IoctlSetInt(fd int, req uint, value int) error {
+func (*osImpl) IoctlSetInt(fd int, req uint, value int) error {
 	return unix.IoctlSetInt(fd, req, value)
 }

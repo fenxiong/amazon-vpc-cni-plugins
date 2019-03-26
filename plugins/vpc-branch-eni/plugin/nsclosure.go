@@ -38,6 +38,14 @@ type setupNamespaceClosureContext struct {
 	uid        int
 }
 
+type teardownNamespaceClosureContext struct {
+	branchName    string
+	netConfig     *config.NetConfig
+	netLink       netlinkwrapper.NetLink
+	tapBridgeName string
+	tapLinkName   string
+}
+
 func newSetupNamespaceClosureContext(branch *eni.Branch, branchName string, ifName string, netConfig *config.NetConfig,
 	netLink netlinkwrapper.NetLink, os oswrapper.OS, uid int) *setupNamespaceClosureContext {
 	return &setupNamespaceClosureContext{
@@ -48,6 +56,17 @@ func newSetupNamespaceClosureContext(branch *eni.Branch, branchName string, ifNa
 		netLink:    netLink,
 		os:         os,
 		uid:        uid,
+	}
+}
+
+func newTeardownNamespaceClosureContext(branchName, tapBridgeName, tapLinkName string,
+	netConfig *config.NetConfig, netLink netlinkwrapper.NetLink) *teardownNamespaceClosureContext {
+	return &teardownNamespaceClosureContext{
+		branchName:    branchName,
+		netConfig:     netConfig,
+		netLink:       netLink,
+		tapBridgeName: tapBridgeName,
+		tapLinkName:   tapLinkName,
 	}
 }
 
@@ -92,6 +111,51 @@ func (closureContext *setupNamespaceClosureContext) run() error {
 	}
 
 	return err
+}
+
+func (closureContext *teardownNamespaceClosureContext) run() error {
+	netConfig := closureContext.netConfig
+
+	var err error
+	if netConfig.InterfaceType == config.IfTypeMACVTAP ||
+		netConfig.InterfaceType == config.IfTypeTAP {
+		// Delete the tap link.
+		la := netlink.NewLinkAttrs()
+		la.Name = closureContext.tapLinkName
+		tapLink := &netlink.Tuntap{LinkAttrs: la}
+		log.Infof("Deleting tap link: %v.", closureContext.tapLinkName)
+		err = closureContext.netLink.LinkDel(tapLink)
+		if err != nil {
+			log.Errorf("Failed to delete tap link: %v.", err)
+			return err
+		}
+	}
+
+	// Delete the branch link.
+	la := netlink.NewLinkAttrs()
+	la.Name = closureContext.branchName
+	branchLink := &netlink.Vlan{LinkAttrs: la}
+	log.Infof("Deleting branch link: %v.", closureContext.branchName)
+	err = closureContext.netLink.LinkDel(branchLink)
+	if err != nil {
+		log.Errorf("Failed to delete branch link: %v.", err)
+		return err
+	}
+
+	if netConfig.InterfaceType == config.IfTypeTAP {
+		// Delete the tap bridge.
+		la = netlink.NewLinkAttrs()
+		la.Name = closureContext.tapBridgeName
+		tapBridge := &netlink.Bridge{LinkAttrs: la}
+		log.Infof("Deleting tap bridge: %v.", closureContext.tapBridgeName)
+		err = closureContext.netLink.LinkDel(tapBridge)
+		if err != nil {
+			log.Errorf("Failed to delete tap bridge: %v.", err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // createVLANLink creates a VLAN link in the target network namespace.
