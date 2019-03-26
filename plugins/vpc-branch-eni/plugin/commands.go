@@ -19,7 +19,6 @@ import (
 
 	"github.com/aws/amazon-vpc-cni-plugins/network/eni"
 	"github.com/aws/amazon-vpc-cni-plugins/network/imds"
-	"github.com/aws/amazon-vpc-cni-plugins/network/netns"
 	"github.com/aws/amazon-vpc-cni-plugins/network/vpc"
 	"github.com/aws/amazon-vpc-cni-plugins/plugins/vpc-branch-eni/config"
 
@@ -50,7 +49,7 @@ func (plugin *Plugin) Add(args *cniSkel.CmdArgs) error {
 
 	// Find the network namespace.
 	log.Infof("Searching for netns %s.", args.Netns)
-	ns, err := netns.GetNetNS(args.Netns)
+	ns, err := plugin.NetNSProvider.GetNetNS(args.Netns)
 	if err != nil {
 		log.Errorf("Failed to find netns %s: %v.", args.Netns, err)
 		return err
@@ -68,7 +67,7 @@ func (plugin *Plugin) Add(args *cniSkel.CmdArgs) error {
 	}
 
 	// Create the trunk ENI.
-	trunk, err := eni.NewTrunk(netConfig.TrunkName, netConfig.TrunkMACAddress, eni.TrunkIsolationModeVLAN)
+	trunk, err := plugin.ENIWrapper.NewTrunk(netConfig.TrunkName, netConfig.TrunkMACAddress, eni.TrunkIsolationModeVLAN)
 	if err != nil {
 		log.Errorf("Failed to find trunk interface %s: %v.", netConfig.TrunkName, err)
 		return err
@@ -76,7 +75,7 @@ func (plugin *Plugin) Add(args *cniSkel.CmdArgs) error {
 
 	// Create the branch ENI.
 	branchName := fmt.Sprintf(branchLinkNameFormat, trunk.GetLinkName(), netConfig.BranchVlanID)
-	branch, err := eni.NewBranch(trunk, branchName, netConfig.BranchMACAddress, netConfig.BranchVlanID)
+	branch, err := plugin.ENIWrapper.NewBranch(trunk, branchName, netConfig.BranchMACAddress, netConfig.BranchVlanID)
 	if err != nil {
 		log.Errorf("Failed to create branch interface %s: %v.", branchName, err)
 		return err
@@ -121,7 +120,7 @@ func (plugin *Plugin) Add(args *cniSkel.CmdArgs) error {
 
 		// Add a blackhole route for IMDS endpoint if required.
 		if netConfig.BlockIMDS {
-			err = imds.BlockInstanceMetadataEndpoint()
+			err = imds.BlockInstanceMetadataEndpoint(plugin.NetLinkWrapper)
 			if err != nil {
 				return err
 			}
@@ -182,7 +181,7 @@ func (plugin *Plugin) Del(args *cniSkel.CmdArgs) error {
 	} else {
 		// Find the trunk link name if not known.
 		if netConfig.TrunkName == "" {
-			trunk, err := eni.NewTrunk("", netConfig.TrunkMACAddress, eni.TrunkIsolationModeVLAN)
+			trunk, err := plugin.ENIWrapper.NewTrunk("", netConfig.TrunkMACAddress, eni.TrunkIsolationModeVLAN)
 			if err != nil {
 				// Log and ignore the failure.
 				log.Errorf("Failed to find trunk with MAC address %v: %v.", netConfig.TrunkMACAddress, err)
@@ -196,7 +195,7 @@ func (plugin *Plugin) Del(args *cniSkel.CmdArgs) error {
 	tapLinkName := args.IfName
 
 	// Search for the target network namespace.
-	netns, err := netns.GetNetNS(args.Netns)
+	netns, err := plugin.NetNSProvider.GetNetNS(args.Netns)
 	if err == nil {
 		// In target network namespace...
 		err = netns.Run(func() error {
