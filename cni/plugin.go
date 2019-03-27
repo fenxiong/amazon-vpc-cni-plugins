@@ -23,6 +23,11 @@ import (
 
 	"github.com/aws/amazon-vpc-cni-plugins/capabilities"
 	"github.com/aws/amazon-vpc-cni-plugins/logger"
+	"github.com/aws/amazon-vpc-cni-plugins/network/cniwrapper"
+	"github.com/aws/amazon-vpc-cni-plugins/network/eniwrapper"
+	"github.com/aws/amazon-vpc-cni-plugins/network/netlinkwrapper"
+	"github.com/aws/amazon-vpc-cni-plugins/network/netns"
+	"github.com/aws/amazon-vpc-cni-plugins/oswrapper"
 	"github.com/aws/amazon-vpc-cni-plugins/version"
 
 	log "github.com/cihub/seelog"
@@ -33,11 +38,16 @@ import (
 
 // Plugin is the base class to all CNI plugins.
 type Plugin struct {
-	Name         string
-	SpecVersions cniVersion.PluginInfo
-	LogFilePath  string
-	Commands     API
-	Capability   *capabilities.Capability
+	Name           string
+	SpecVersions   cniVersion.PluginInfo
+	LogFilePath    string
+	Commands       API
+	Capability     *capabilities.Capability
+	ENIWrapper     eniwrapper.ENI
+	NetLinkWrapper netlinkwrapper.NetLink
+	NetNSProvider  netns.NetNSProvider
+	OSWrapper      oswrapper.OS
+	CNIWrapper     cniwrapper.CNI
 }
 
 // NewPlugin creates a new CNI Plugin object.
@@ -48,11 +58,16 @@ func NewPlugin(
 	cmds API) (*Plugin, error) {
 
 	return &Plugin{
-		Name:         name,
-		SpecVersions: specVersions,
-		LogFilePath:  logFilePath,
-		Commands:     cmds,
-		Capability:   capabilities.New(),
+		Name:           name,
+		SpecVersions:   specVersions,
+		LogFilePath:    logFilePath,
+		Commands:       cmds,
+		Capability:     capabilities.New(),
+		ENIWrapper:     eniwrapper.NewENI(),
+		NetLinkWrapper: netlinkwrapper.NewNetLink(),
+		NetNSProvider:  netns.NewNetNSProvider(),
+		OSWrapper:      oswrapper.NewOS(),
+		CNIWrapper:     cniwrapper.NewCNI(),
 	}, nil
 }
 
@@ -163,9 +178,9 @@ func (plugin *Plugin) LookupUser(userName string) (int, error) {
 
 	// Lookup the current user if no username is given.
 	if userName == "" {
-		u, err = user.Current()
+		u, err = plugin.OSWrapper.Current()
 	} else {
-		u, err = user.Lookup(userName)
+		u, err = plugin.OSWrapper.Lookup(userName)
 	}
 
 	if err != nil {
