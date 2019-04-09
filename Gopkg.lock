@@ -104,6 +104,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:fd18b3e9b2ec7f9b5d268e94346dbcc425f0455e207f4d688597cd86001543b7"
+  name = "github.com/sparrc/go-ping"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ef3ab45e41b017889941ea5bb796dd502d2b5a1b"
+
+[[projects]]
   digest = "1:c40d65817cdd41fac9aa7af8bed56927bb2d6d47e4fea566a74880f5c2b1c41e"
   name = "github.com/stretchr/testify"
   packages = [
@@ -143,6 +151,21 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:02db15b00b4128a6210381098f3f857866101e7560c02e4246c4f49373520109"
+  name = "golang.org/x/net"
+  packages = [
+    "bpf",
+    "icmp",
+    "internal/iana",
+    "internal/socket",
+    "ipv4",
+    "ipv6",
+  ]
+  pruneopts = "UT"
+  revision = "eb5bcb51f2a31c7d5141d810b70815c05d9c9146"
+
+[[projects]]
+  branch = "master"
   digest = "1:0dafafed83f125cdc945a014b2dec15e5b5d8cd2d77a2d1e3763120b08ab381b"
   name = "golang.org/x/sys"
   packages = [
@@ -165,6 +188,7 @@
     "github.com/containernetworking/cni/pkg/version",
     "github.com/coreos/go-iptables/iptables",
     "github.com/pkg/errors",
+    "github.com/sparrc/go-ping",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "github.com/vishvananda/netlink",

@@ -16,13 +16,13 @@ package plugin
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/aws/amazon-vpc-cni-plugins/network/eni"
 	"github.com/aws/amazon-vpc-cni-plugins/network/imds"
 	"github.com/aws/amazon-vpc-cni-plugins/network/netns"
 	"github.com/aws/amazon-vpc-cni-plugins/network/vpc"
 	"github.com/aws/amazon-vpc-cni-plugins/plugins/vpc-branch-eni/config"
-
 	log "github.com/cihub/seelog"
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
 	cniTypes "github.com/containernetworking/cni/pkg/types"
@@ -284,6 +284,26 @@ func (plugin *Plugin) createVLANLink(branch *eni.Branch, linkName string, ipAddr
 			log.Errorf("Failed to add IP route %+v via branch %v: %v.", route, branch, err)
 			return err
 		}
+
+		log.Infof("Waiting for subnet gateway %s to be available", gatewayIPAddress.String())
+		start := time.Now()
+		stats, err := waitEndpointAvailable(gatewayIPAddress.String(), 1 * time.Minute)
+		if err != nil {
+			log.Errorf("Unable to ping subnet gateway: %v", err)
+			return err
+		}
+
+		log.Infof("Successfully pinged subnet gateway after %v, stats: %v", time.Since(start), stats)
+
+		publicWebsite := "www.google.com"
+		log.Infof("Try pinging %s", publicWebsite)
+		stats, err = pingEndpoint(publicWebsite)
+		if err != nil {
+			log.Errorf("Unable to ping %s: %v", publicWebsite, err)
+			return err
+		}
+
+		log.Infof("Successfully pinged %s, stats: %v", publicWebsite, stats)
 	}
 
 	return nil
