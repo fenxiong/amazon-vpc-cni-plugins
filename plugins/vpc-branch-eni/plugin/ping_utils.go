@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	pingNum = 3
+	pingNum = 1
 )
 
 func waitEndpointAvailable(endpoint string, timeout time.Duration) (*ping.Statistics, error) {
@@ -31,7 +31,7 @@ func waitEndpointAvailable(endpoint string, timeout time.Duration) (*ping.Statis
 	}
 	pinger.SetPrivileged(true)
 	pinger.Count = pingNum
-	pinger.Timeout = 5 * time.Second
+	pinger.Timeout = 300 * time.Millisecond
 
 	timer := time.NewTimer(timeout)
 	statsChan := make(chan *ping.Statistics, 1)
@@ -78,7 +78,7 @@ func pingEndpoint(endpoint string) (*ping.Statistics, error) {
 	}
 	pinger.SetPrivileged(true)
 	pinger.Count = pingNum
-	pinger.Timeout = 5 * time.Second
+	pinger.Timeout = 300 * time.Millisecond
 
 	pinger.Run()
 

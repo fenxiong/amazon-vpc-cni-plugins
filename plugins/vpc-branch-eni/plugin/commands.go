@@ -285,25 +285,36 @@ func (plugin *Plugin) createVLANLink(branch *eni.Branch, linkName string, ipAddr
 			return err
 		}
 
-		log.Infof("Waiting for subnet gateway %s to be available", gatewayIPAddress.String())
+		//log.Infof("Waiting for subnet gateway %s to be available", gatewayIPAddress.String())
+		//start := time.Now()
+		//stats, err := waitEndpointAvailable(gatewayIPAddress.String(), 1 * time.Minute)
+		//if err != nil {
+		//	log.Errorf("Unable to ping subnet gateway: %v", err)
+		//	return err
+		//}
+		//
+		//log.Infof("Successfully pinged subnet gateway after %v, stats: %v", time.Since(start), stats)
+		//
+		//publicWebsite := "www.google.com"
+		//log.Infof("Try pinging %s", publicWebsite)
+		//stats, err = pingEndpoint(publicWebsite)
+		//if err != nil {
+		//	log.Errorf("Unable to ping %s: %v", publicWebsite, err)
+		//	return err
+		//}
+		//
+		//log.Infof("Successfully pinged %s, stats: %v", publicWebsite, stats)
+
 		start := time.Now()
-		stats, err := waitEndpointAvailable(gatewayIPAddress.String(), 1 * time.Minute)
+		website := "www.google.com"
+		log.Infof("Try pinging %s", website)
+		stats, err := pingEndpoint(website)
 		if err != nil {
-			log.Errorf("Unable to ping subnet gateway: %v", err)
+			log.Errorf("Unable to ping %s: %v", website, err)
 			return err
 		}
 
-		log.Infof("Successfully pinged subnet gateway after %v, stats: %v", time.Since(start), stats)
-
-		publicWebsite := "www.google.com"
-		log.Infof("Try pinging %s", publicWebsite)
-		stats, err = pingEndpoint(publicWebsite)
-		if err != nil {
-			log.Errorf("Unable to ping %s: %v", publicWebsite, err)
-			return err
-		}
-
-		log.Infof("Successfully pinged %s, stats: %v", publicWebsite, stats)
+		log.Infof("Successfully pinged %s after %v, stats: %v", website, time.Since(start), stats)
 	}
 
 	return nil
