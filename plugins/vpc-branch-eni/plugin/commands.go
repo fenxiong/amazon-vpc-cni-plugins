@@ -306,15 +306,16 @@ func (plugin *Plugin) createVLANLink(branch *eni.Branch, linkName string, ipAddr
 		//log.Infof("Successfully pinged %s, stats: %v", publicWebsite, stats)
 
 		start := time.Now()
-		website := "www.google.com"
-		log.Infof("Try pinging %s", website)
-		stats, err := pingEndpoint(website)
+		// website := "www.google.com"
+		endpoint := gatewayIPAddress.String()
+		log.Infof("Try pinging %s", endpoint)
+		stats, err := pingEndpoint(endpoint)
 		if err != nil {
-			log.Errorf("Unable to ping %s: %v", website, err)
+			log.Errorf("Unable to ping %s: %v", endpoint, err)
 			return err
 		}
 
-		log.Infof("Successfully pinged %s after %v, stats: %v", website, time.Since(start), stats)
+		log.Infof("Successfully pinged %s after %v, stats: %v", endpoint, time.Since(start), stats)
 	}
 
 	return nil
