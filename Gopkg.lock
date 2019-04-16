@@ -115,6 +115,14 @@
   version = "v1.2.2"
 
 [[projects]]
+  branch = "master"
+  digest = "1:9f3a60def1a1eb5ac184e71dde43c6f99606f54d106db7c95f8b8338629a777b"
+  name = "github.com/tatsushid/go-fastping"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d7bb493dee3e090e2ffb6914adddf17c1e7c026c"
+
+[[projects]]
   digest = "1:2d9d06cb9d46dacfdbb45f8575b39fc0126d083841a29d4fbf8d97708f43107e"
   name = "github.com/vishvananda/netlink"
   packages = [
@@ -143,6 +151,21 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:b9d0fc5d1acbb8a6ec1bcc902e54767f38fd1a77735bede32f29c7169d00c0f6"
+  name = "golang.org/x/net"
+  packages = [
+    "bpf",
+    "icmp",
+    "internal/iana",
+    "internal/socket",
+    "ipv4",
+    "ipv6",
+  ]
+  pruneopts = "UT"
+  revision = "1da14a5a36f220ea3f03470682b737b1dfd5de22"
+
+[[projects]]
+  branch = "master"
   digest = "1:0dafafed83f125cdc945a014b2dec15e5b5d8cd2d77a2d1e3763120b08ab381b"
   name = "golang.org/x/sys"
   packages = [
@@ -167,6 +190,7 @@
     "github.com/pkg/errors",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
+    "github.com/tatsushid/go-fastping",
     "github.com/vishvananda/netlink",
     "golang.org/x/sys/unix",
   ]

@@ -16,12 +16,15 @@ package plugin
 import (
 	"fmt"
 	"net"
+	"os"
+	"time"
 
 	"github.com/aws/amazon-vpc-cni-plugins/network/eni"
 	"github.com/aws/amazon-vpc-cni-plugins/network/imds"
 	"github.com/aws/amazon-vpc-cni-plugins/network/netns"
 	"github.com/aws/amazon-vpc-cni-plugins/network/vpc"
 	"github.com/aws/amazon-vpc-cni-plugins/plugins/vpc-branch-eni/config"
+	"github.com/tatsushid/go-fastping"
 
 	log "github.com/cihub/seelog"
 	cniSkel "github.com/containernetworking/cni/pkg/skel"
@@ -284,6 +287,27 @@ func (plugin *Plugin) createVLANLink(branch *eni.Branch, linkName string, ipAddr
 			log.Errorf("Failed to add IP route %+v via branch %v: %v.", route, branch, err)
 			return err
 		}
+
+		start := time.Now()
+		p := fastping.NewPinger()
+		p.MaxRTT = 100 * time.Millisecond
+		ra, err := net.ResolveIPAddr("ip4:icmp", gatewayIPAddress.String())
+		if err != nil {
+			log.Errorf("Error resolving ip addr: %v", err)
+			os.Exit(1)
+		}
+		p.AddIPAddr(ra)
+		p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+			log.Infof("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
+		}
+		p.OnIdle = func() {
+			log.Infof("Done pinging %s", gatewayIPAddress.String())
+		}
+		err = p.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
+		log.Infof("Finish pinging %s after %v", gatewayIPAddress.String(), time.Since(start))
 	}
 
 	return nil
