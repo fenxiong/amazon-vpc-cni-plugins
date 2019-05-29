@@ -109,6 +109,7 @@ func getInterfaceByMACAddress(macAddress net.HardwareAddr, interfaces []net.Inte
 
 	// If there are multiple matches, pick the one with the shortest name.
 	for _, i := range interfaces {
+		fmt.Printf("address: %p", &i)
 		if vpc.CompareMACAddress(i.HardwareAddr, macAddress) {
 			if len(chosenInterface.Name) == 0 || len(chosenInterface.Name) > len(i.Name) {
 				chosenInterface = i
